@@ -72,64 +72,64 @@ yum install gcc -y
 #пробуем снова
 rpmbuild -bb SPECS/nginx.spec
 
-# опять что-то не так: error: Bad exit status from /var/tmp/rpm-tmp.fU5B6T (%build) 
-# чуть выше видим /bin/sh: line 0: cd: /root/openssl-1.1.1a: No such file or directory
-# в SPECS/nginx.spec видим строки:
+#опять что-то не так: error: Bad exit status from /var/tmp/rpm-tmp.fU5B6T (%build) 
+#чуть выше видим /bin/sh: line 0: cd: /root/openssl-1.1.1a: No such file or directory
+#в SPECS/nginx.spec видим строки:
 #./configure %{BASE_CONFIGURE_ARGS} \    
 #    --with-cc-opt="%{WITH_CC_OPT}" \    
 #    --with-ld-opt="%{WITH_LD_OPT}" \    
 #    --with-openssl=/root/openssl-1.1.1a 
 
-# попробуем заменить путь до openssl на /root/rpmbuild/openssl-1.1.1q
+#попробуем заменить путь до openssl на /root/rpmbuild/openssl-1.1.1q
 
-# запускаем снова rpmbuild
+#запускаем снова rpmbuild
 rpmbuild -bb SPECS/nginx.spec
 
 #опять ошибка Can't locate IPC/Cmd.pm
 № гуглим, ставим
 yum install perl-IPC-Cmd -y
 
-# запускаем снова rpmbuild
+#запускаем снова rpmbuild
 rpmbuild -bb SPECS/nginx.spec
 
-# ощибка - Can't locate Data/Dumper.pm
-# гуглим - ставим
+#ощибка - Can't locate Data/Dumper.pm
+#гуглим - ставим
 yum install perl-Data-Dumper -y
 
-# запускаем снова rpmbuild
+#запускаем снова rpmbuild
 rpmbuild -bb SPECS/nginx.spec
-# получилось!
+#получилось!
 
-# ставим пакет, смортим:
+#ставим пакет, смортим:
 yum localinstall RPMS/x86_64/nginx-1.14.1-1.el7_4.ngx.x86_64.rpm
 
-# запускаем и смотрим статус
+#запускаем и смотрим статус
 systemctl start nginx && systemctl status nginx
-# все хорошо
+#все хорошо
 
-# переходим к созданию репозитория
+#переходим к созданию репозитория
 mkdir /usr/share/nginx/html/repo
 
-# копируем в созданную директорию полученный пакет
+#копируем в созданную директорию полученный пакет
 cp RPMS/x86_64/nginx-1.14.1-1.el7_4.ngx.x86_64.rpm /usr/share/nginx/html/repo
 
-# ставим createrepo
+#ставим createrepo
 yum install createrepo -y
 
-# создаем репозиторий
+#создаем репозиторий
 createrepo /usr/share/nginx/html/repo/
 
-# добавляем параметр для листинга директории
+#добавляем параметр для листинга директории
 vi /etc/nginx/conf.d/default.conf
 
-# проверяем конфиги и перезагружаем nginx
+#проверяем конфиги и перезагружаем nginx
 nginx -t
 nginx -s reload
 
-# качаем страницу и смотрим, что пакет отображается в выводе
+#качаем страницу и смотрим, что пакет отображается в выводе
 curl -a http://localhost/repo
 
-# добавим репозиторий в yum, создав отдельный файл otus.repo в /etc/yum.repos.d/
+#добавим репозиторий в yum, создав отдельный файл otus.repo в /etc/yum.repos.d/
 cat >> /etc/yum.repos.d/otus.repo << EOF
 [otus]
 name=otus-linux
@@ -138,24 +138,24 @@ gpgcheck=0
 enabled=1
 EOF
 
-# смотрим вывод yum repolist
+#смотрим вывод yum repolist
 yum repolist | grep otus
-# видим наш репозиторий
+#видим наш репозиторий
 
-# теперь добавим туда percona
+#теперь добавим туда percona
 wget https://downloads.percona.com/downloads/percona-release/percona-release-1.0-27/redhat/percona-release-1.0-27.noarch.rpm -O /usr/share/nginx/html/repo/percona-release-1.0-27.noarch.rpm
 
-# обновим репозиторий
+#обновим репозиторий
 createrepo /usr/share/nginx/html/repo/
 
-# обновим кэш
+#обновим кэш
 yum makecache
 
-# выведем список пакетов
+#выведем список пакетов
 yum list | grep otus
 
-# почему-то видим только percona, поставим
+#почему-то видим только percona, поставим
 yum install percona-release
 
-# готово
+#готово
 
